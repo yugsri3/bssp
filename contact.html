@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>संपर्क करें | Contact Us — BSSP</title>
+<link rel="icon" href="images/logobssp.jpeg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="container">
+    <div class="topbar-links"><a href="tel:+917607222333">📞 +91-7607222333</a><span>|</span><a href="mailto:support@bssp.co.in">✉️ support@bssp.co.in</a></div>
+    <div class="topbar-links"><span>जय हिंद 🇮🇳</span></div>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="container header-row">
+    <a href="index.html" class="brand">
+      <img src="images/logobssp.jpeg" alt="BSSP Logo">
+      <span class="brand-text"><span class="hi">भारतीय सैनिक सहायता परिषद</span><br><span class="en">Bhartiya Sainik Sahayta Parishad</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu">☰</button>
+    <nav class="main-nav">
+      <a href="index.html">होम</a>
+      <a href="about.html">हमारे बारे में</a>
+      <a href="missions.html">मिशन</a>
+      <a href="gallery.html">गैलरी</a>
+      <a href="contact.html">संपर्क करें</a>
+    </nav>
+    <div class="header-cta"><a href="donate.html" class="btn btn-saffron">🤝 दान करें</a></div>
+  </div>
+</header>
+
+<section class="page-banner">
+  <div class="container">
+    <div class="breadcrumb"><a href="index.html">होम</a> / संपर्क करें</div>
+    <h1>संपर्क करें — Contact Us</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-2" style="gap:50px; align-items:flex-start;">
+      <div>
+        <div class="eyebrow">संदेश भेजें</div>
+        <h2>हमें लिखें</h2>
+        <p>चाहे आप किसी सैनिक परिवार के बारे में जानकारी देना चाहते हों, स्वयंसेवक बनना चाहते हों, या कोई प्रश्न हो — नीचे फ़ॉर्म भरें, हम शीघ्र संपर्क करेंगे।</p>
+
+        <form id="contact-form" novalidate>
+          <div class="alert"></div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="name">पूरा नाम *</label>
+              <input type="text" id="name" name="name" required placeholder="आपका नाम">
+            </div>
+            <div class="form-field">
+              <label for="phone">मोबाइल नंबर</label>
+              <input type="tel" id="phone" name="phone" placeholder="+91">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="email">ईमेल *</label>
+              <input type="email" id="email" name="email" required placeholder="you@example.com">
+            </div>
+            <div class="form-field">
+              <label for="subject">विषय</label>
+              <select id="subject" name="subject">
+                <option value="general">सामान्य जानकारी</option>
+                <option value="volunteer">स्वयंसेवक बनना चाहता/चाहती हूँ</option>
+                <option value="donation">दान संबंधी प्रश्न</option>
+                <option value="help">सहायता हेतु अनुरोध (सैनिक परिवार)</option>
+                <option value="media">मीडिया / साझेदारी</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="message">संदेश *</label>
+            <textarea id="message" name="message" rows="5" required placeholder="अपना संदेश यहाँ लिखें..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-saffron btn-block">संदेश भेजें — Send Message</button>
+        </form>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="body">
+            <h3>📍 पता</h3>
+            <p>भारतीय सैनिक सहायता परिषद<br>P.P.N. Market, कानपुर, उत्तर प्रदेश, भारत</p>
+            <h3>📞 फ़ोन</h3>
+            <p><a href="tel:+917607222333">+91-7607222333</a></p>
+            <h3>✉️ ईमेल</h3>
+            <p><a href="mailto:support@bssp.co.in">support@bssp.co.in</a></p>
+            <h3>🕐 कार्यालय समय</h3>
+            <p>सोमवार – शनिवार, सुबह 10 बजे – शाम 6 बजे</p>
+          </div>
+        </div>
+        <div class="card">
+          <iframe title="BSSP Location Map" src="https://maps.google.com/maps?q=Kanpur%2C%20Uttar%20Pradesh&t=&z=12&ie=UTF8&iwloc=&output=embed" style="width:100%; height:280px; border:0;" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/footer.js"></script>
+</body>
+</html>

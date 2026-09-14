@@ -1,0 +1,14 @@
+# local secrets
+js/config.local.js
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# logs
+*.log
+
+# optional local env files
+.env
+.env.*

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>एडमिन पैनल | Admin — BSSP</title>
+<link rel="icon" href="images/logobssp.jpeg">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body{ background: var(--cream); }
+  .admin-shell{ max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+  .admin-topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; flex-wrap:wrap; gap:12px; }
+  .admin-tabs{ display:flex; gap:8px; margin-bottom:26px; flex-wrap:wrap; }
+  .admin-tab{ padding:10px 18px; border-radius:999px; border:1.5px solid var(--line); background:var(--white); font-weight:600; font-size:.88rem; cursor:pointer; }
+  .admin-tab.active{ background:var(--navy); color:var(--white); border-color:var(--navy); }
+  .admin-panel-section{ display:none; }
+  .admin-panel-section.active{ display:block; }
+  .admin-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:26px; margin-bottom:24px; }
+  table.admin-table{ width:100%; border-collapse:collapse; }
+  table.admin-table th, table.admin-table td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); font-size:.88rem; vertical-align:top; }
+  table.admin-table th{ color:var(--ink-soft); font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; }
+  .login-wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .login-box{ background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:40px; max-width:400px; width:100%; text-align:center; }
+  .login-box img{ width:64px; margin:0 auto 14px; }
+  .notice{ background:#fff6e5; border:1px solid #f0d896; color:#7a5b0a; padding:14px 18px; border-radius:var(--radius); font-size:.85rem; margin-bottom:24px; }
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="login-gate">
+  <div class="login-box">
+    <img src="images/logobssp.jpeg" alt="BSSP Logo">
+    <h2>एडमिन लॉगिन</h2>
+    <p class="small">Admin Login — यह पैनल केवल संस्था के अधिकृत सदस्यों के लिए है।</p>
+    <form id="login-form">
+      <div class="form-field" style="text-align:left;">
+        <label for="login-password">पासवर्ड — Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" required>
+      </div>
+      <div class="alert alert-error" id="login-error"></div>
+      <button type="submit" class="btn btn-saffron btn-block">लॉगिन करें</button>
+    </form>
+    <p class="small" style="margin-top:18px; color:var(--ink-soft);">Only authorized staff can access this admin area.</p>
+    <p class="small"><a href="index.html">← वेबसाइट पर वापस जाएं</a></p>
+  </div>
+</div>
+
+<div id="admin-panel" style="display:none;">
+  <div class="admin-shell">
+    <div class="admin-topbar">
+      <div>
+        <h1 style="margin-bottom:2px;">एडमिन पैनल — Admin Panel</h1>
+        <p class="small mt-0">मिशन, गैलरी व संदेशों का प्रबंधन यहाँ से करें।</p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="index.html" class="btn btn-ghost">वेबसाइट देखें</a>
+        <button class="btn btn-navy" id="logout-btn">लॉगआउट</button>
+      </div>
+    </div>
+
+    <div class="notice">
+      ⚠️ <strong>ध्यान दें:</strong> यह एक फ्रंट-एंड डेमो पैनल है — सारा डेटा केवल इसी ब्राउज़र में सुरक्षित रहता है (localStorage)। असली वेबसाइट के लिए जहाँ कई लोग मिलकर कंटेंट मैनेज करें, एक बैकएंड सर्वर व डेटाबेस जोड़ना आवश्यक होगा।
+      <br>⚠️ <strong>Note:</strong> This is a front-end demo — all data is saved only in this browser. A real multi-user production panel needs a backend + database.
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="tab-missions">🎯 मिशन</button>
+      <button class="admin-tab" data-tab="tab-gallery">🖼️ गैलरी</button>
+      <button class="admin-tab" data-tab="tab-messages">✉️ संदेश</button>
+      <button class="admin-tab" data-tab="tab-settings">⚙️ सेटिंग्स</button>
+    </div>
+
+    <!-- MISSIONS -->
+    <div class="admin-panel-section active" id="tab-missions">
+      <div class="admin-card">
+        <h3>नया मिशन जोड़ें — Add Mission</h3>
+        <form id="mission-form">
+          <div class="form-row">
+            <div class="form-field"><label>शीर्षक (हिंदी) *</label><input type="text" name="title" required></div>
+            <div class="form-field"><label>Title (English)</label><input type="text" name="titleEn"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>स्थिति — Status *</label>
+              <select name="status" required>
+                <option value="upcoming">आगामी · Upcoming</option>
+                <option value="ongoing">जारी · Ongoing</option>
+                <option value="completed">सम्पन्न · Completed</option>
+              </select>
+            </div>
+            <div class="form-field"><label>तिथि — Date *</label><input type="date" name="date" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>स्थान — Location</label><input type="text" name="location" placeholder="जैसे: कानपुर, उत्तर प्रदेश"></div>
+            <div class="form-field"><label>कवर फ़ोटो URL</label><input type="text" name="cover" placeholder="images/gallery-1.jpg"></div>
+          </div>
+          <div class="form-field"><label>विवरण (हिंदी) *</label><textarea name="summary" rows="3" required></textarea></div>
+          <div class="form-field"><label>Summary (English)</label><textarea name="summaryEn" rows="2"></textarea></div>
+          <button type="submit" class="btn btn-saffron">मिशन जोड़ें — Add Mission</button>
+          <span class="alert alert-success" id="mission-saved-msg" style="display:inline-block; margin-left:10px; padding:8px 14px;">सहेजा गया ✓</span>
+        </form>
+      </div>
+      <div class="admin-card">
+        <h3>सभी मिशन — All Missions</h3>
+        <table class="admin-table">
+          <thead><tr><th>फ़ोटो</th><th>शीर्षक</th><th>स्थिति</th><th>तिथि</th><th>स्थान</th><th></th></tr></thead>
+          <tbody id="admin-missions-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="admin-panel-section" id="tab-gallery">
+      <div class="admin-card">
+        <h3>नई फ़ोटो जोड़ें — Add Photo</h3>
+        <p class="small">फ़ोटो का URL या फ़ाइल पथ दर्ज करें (जैसे <code>images/my-photo.jpg</code>) — फ़ाइल को पहले <code>/images</code> फ़ोल्डर में अपलोड करें।</p>
+        <form id="gallery-form">
+          <div class="form-field"><label>फ़ोटो URL / Path *</label><input type="text" name="src" required placeholder="images/new-event.jpg"></div>
+          <div class="form-row">
+            <div class="form-field"><label>कैप्शन (हिंदी)</label><input type="text" name="caption"></div>
+            <div class="form-field"><label>Caption (English)</label><input type="text" name="captionEn"></div>
+          </div>
+          <button type="submit" class="btn btn-saffron">फ़ोटो जोड़ें — Add Photo</button>
+          <span class="alert alert-success" id="gallery-saved-msg" style="display:inline-block; margin-left:10px; padding:8px 14px;">सहेजा गया ✓</span>
+        </form>
+      </div>
+      <div class="admin-card">
+        <h3>सभी फ़ोटो — All Photos</h3>
+        <div class="grid grid-4" id="admin-gallery-list"></div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="admin-panel-section" id="tab-messages">
+      <div class="admin-card">
+        <h3>संपर्क फ़ॉर्म संदेश — Contact Messages</h3>
+        <p class="small">यह संदेश केवल इसी ब्राउज़र में सहेजे जाते हैं। वास्तविक ईमेल सूचना हेतु फ़ॉर्म को एक बैकएंड (जैसे Formspree, या अपना सर्वर) से जोड़ना होगा।</p>
+        <table class="admin-table">
+          <thead><tr><th>नाम</th><th>संपर्क</th><th>विषय</th><th>संदेश</th><th>समय</th></tr></thead>
+          <tbody id="admin-messages-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="admin-panel-section" id="tab-settings">
+      <div class="admin-card">
+        <h3>पासवर्ड बदलें — Change Admin Password</h3>
+        <form id="password-form">
+          <div class="form-field" style="max-width:320px;">
+            <label>नया पासवर्ड — New Password</label>
+            <input type="password" id="new-password" minlength="6" required>
+          </div>
+          <button type="submit" class="btn btn-navy">पासवर्ड अपडेट करें</button>
+        </form>
+      </div>
+      <div class="admin-card">
+        <h3>डेटा रीसेट करें — Reset Demo Data</h3>
+        <p class="small">यह सभी जोड़े गए मिशन, फ़ोटो व संदेश हटाकर मूल डेमो डेटा वापस लाएगा।</p>
+        <button class="btn btn-ghost" id="reset-data-btn">सब कुछ रीसेट करें</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.local.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
