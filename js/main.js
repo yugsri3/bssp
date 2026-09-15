@@ -196,7 +196,7 @@ async function initDonationForm(){
           payment_method: data.payment_method || 'upi',
           transaction_id: data.transaction_id || '',
           notes: data.notes || '',
-          status: data.status || 'pending'
+          status: 'pending'
         };
 
         const { error } = await bsspSupabase.from('donation_submissions').insert([payload]);
