@@ -8,8 +8,6 @@
    wire up to a real backend later. See the notice on the page itself.
    ========================================================================== */
 
-const ADMIN_PASSWORD_KEY = 'bssp_admin_password';
-const DEFAULT_ADMIN_PASSWORD = 'SET_THIS_IN_LOCAL_CONFIG';
 const ADMIN_SUPABASE_URL = (window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseUrl) || 'https://YOUR_PROJECT_URL.supabase.co';
 const ADMIN_SUPABASE_ANON_KEY = (window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseAnonKey) || 'YOUR_SUPABASE_ANON_KEY';
 const adminSupabase = (window.supabase && window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseUrl && window.BSSP_CONFIG.supabaseAnonKey)
@@ -17,17 +15,7 @@ const adminSupabase = (window.supabase && window.BSSP_CONFIG && window.BSSP_CONF
   : null;
 const MEDIA_BUCKET = 'site-media';
 
-function getConfiguredAdminPassword(){
-  const configured = window.BSSP_CONFIG && window.BSSP_CONFIG.adminPassword;
-  if(configured && configured !== DEFAULT_ADMIN_PASSWORD) return configured;
-  return localStorage.getItem(ADMIN_PASSWORD_KEY) || DEFAULT_ADMIN_PASSWORD;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  const configuredPassword = getConfiguredAdminPassword();
-  if(!localStorage.getItem(ADMIN_PASSWORD_KEY) && configuredPassword !== DEFAULT_ADMIN_PASSWORD){
-    localStorage.setItem(ADMIN_PASSWORD_KEY, configuredPassword);
-  }
   initLoginGate();
   initLogout();
   initTabs();
@@ -40,36 +28,45 @@ document.addEventListener('DOMContentLoaded', () => {
   initResetData();
 });
 
-function initLoginGate(){
+async function initLoginGate(){
   const gate = document.getElementById('login-gate');
   const panel = document.getElementById('admin-panel');
   const form = document.getElementById('login-form');
-  const isAuthed = sessionStorage.getItem(BSSP_KEYS.auth) === 'yes';
-
   function unlock(){
     gate.style.display = 'none';
     panel.style.display = 'block';
   }
-  if(isAuthed) unlock();
+  try {
+    const response = await fetch('/api/admin-login', { credentials: 'same-origin' });
+    if(response.ok) unlock();
+  } catch(error) {
+    console.error(error);
+  }
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const val = document.getElementById('login-password').value;
-    const correct = getConfiguredAdminPassword();
     const err = document.getElementById('login-error');
-
-    if(correct === DEFAULT_ADMIN_PASSWORD){
-      err.textContent = 'Admin password is not configured yet. Create js/config.local.js with a secret password.';
-      err.classList.add('show');
-      return;
-    }
-
-    if(val === correct){
-      sessionStorage.setItem(BSSP_KEYS.auth, 'yes');
-      err.classList.remove('show');
-      unlock();
-    }else{
-      err.textContent = 'ग़लत पासवर्ड। / Incorrect password.';
+    try {
+      const response = await fetch('/api/admin-login', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: val })
+      });
+      if(response.ok){
+        document.getElementById('login-password').value = '';
+        err.classList.remove('show');
+        unlock();
+      }else{
+        err.textContent = response.status === 500
+          ? 'Admin authentication is not configured on Vercel.'
+          : 'ग़लत पासवर्ड। / Incorrect password.';
+        err.classList.add('show');
+      }
+    } catch(error) {
+      console.error(error);
+      err.textContent = 'Admin login service is unavailable.';
       err.classList.add('show');
     }
   });
@@ -78,8 +75,8 @@ function initLoginGate(){
 function initLogout(){
   const btn = document.getElementById('logout-btn');
   if(!btn) return;
-  btn.addEventListener('click', () => {
-    sessionStorage.removeItem(BSSP_KEYS.auth);
+  btn.addEventListener('click', async () => {
+    await fetch('/api/admin-login', { method: 'DELETE', credentials: 'same-origin' });
     location.reload();
   });
 }
@@ -271,9 +268,8 @@ function initPasswordForm(){
       alert('पासवर्ड कम से कम 6 अक्षर का होना चाहिए। / Password must be at least 6 characters.');
       return;
     }
-    localStorage.setItem(ADMIN_PASSWORD_KEY, val);
     form.reset();
-    alert('पासवर्ड सफलतापूर्वक बदल दिया गया। / Password updated.');
+    alert('पासवर्ड बदलने के लिए Vercel में ADMIN_PASSWORD environment variable update करके redeploy करें।');
   });
 }
 function initResetData(){
