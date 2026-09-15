@@ -59,8 +59,8 @@
     </div>
 
     <div class="notice">
-      ⚠️ <strong>ध्यान दें:</strong> यह एक फ्रंट-एंड डेमो पैनल है — सारा डेटा केवल इसी ब्राउज़र में सुरक्षित रहता है (localStorage)। असली वेबसाइट के लिए जहाँ कई लोग मिलकर कंटेंट मैनेज करें, एक बैकएंड सर्वर व डेटाबेस जोड़ना आवश्यक होगा।
-      <br>⚠️ <strong>Note:</strong> This is a front-end demo — all data is saved only in this browser. A real multi-user production panel needs a backend + database.
+      ✅ <strong>Live data mode:</strong> Contact forms are connected to Supabase, so messages and donation records can be read here in real time.
+      <br>⚠️ <strong>Note:</strong> This admin login is still demo-only; a full production system should use real server-side auth.
     </div>
 
     <div class="admin-tabs">
@@ -92,8 +92,9 @@
           </div>
           <div class="form-row">
             <div class="form-field"><label>स्थान — Location</label><input type="text" name="location" placeholder="जैसे: कानपुर, उत्तर प्रदेश"></div>
-            <div class="form-field"><label>कवर फ़ोटो URL</label><input type="text" name="cover" placeholder="images/gallery-1.jpg"></div>
+            <div class="form-field"><label>कवर फ़ोटो अपलोड करें</label><input type="file" name="coverFile" accept="image/*" capture="environment"><small class="small">फोन से फोटो चुनें या कैमरा खोलें।</small></div>
           </div>
+          <div class="form-field"><label>या image URL डालें</label><input type="url" name="cover" placeholder="https://example.com/photo.jpg"></div>
           <div class="form-field"><label>विवरण (हिंदी) *</label><textarea name="summary" rows="3" required></textarea></div>
           <div class="form-field"><label>Summary (English)</label><textarea name="summaryEn" rows="2"></textarea></div>
           <button type="submit" class="btn btn-saffron">मिशन जोड़ें — Add Mission</button>
@@ -113,9 +114,10 @@
     <div class="admin-panel-section" id="tab-gallery">
       <div class="admin-card">
         <h3>नई फ़ोटो जोड़ें — Add Photo</h3>
-        <p class="small">फ़ोटो का URL या फ़ाइल पथ दर्ज करें (जैसे <code>images/my-photo.jpg</code>) — फ़ाइल को पहले <code>/images</code> फ़ोल्डर में अपलोड करें।</p>
+        <p class="small">फोन से फोटो चुनें या कैमरा खोलें। फोटो Supabase Storage में सुरक्षित होकर वेबसाइट पर दिखेगी।</p>
         <form id="gallery-form">
-          <div class="form-field"><label>फ़ोटो URL / Path *</label><input type="text" name="src" required placeholder="images/new-event.jpg"></div>
+          <div class="form-field"><label>फ़ोटो अपलोड करें *</label><input type="file" name="imageFile" accept="image/*" capture="environment"><small class="small">फोन से फोटो चुनें या कैमरा खोलें।</small></div>
+          <div class="form-field"><label>या image URL डालें</label><input type="url" name="src" placeholder="https://example.com/photo.jpg"></div>
           <div class="form-row">
             <div class="form-field"><label>कैप्शन (हिंदी)</label><input type="text" name="caption"></div>
             <div class="form-field"><label>Caption (English)</label><input type="text" name="captionEn"></div>
@@ -163,6 +165,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.local.js"></script>
 <script src="js/config.js"></script>
 <script src="js/data.js"></script>

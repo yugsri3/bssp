@@ -2,6 +2,12 @@
    BSSP — site behaviour
    ========================================================================== */
 
+const BSSP_SUPABASE_URL = (window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseUrl) || 'https://YOUR_PROJECT_URL.supabase.co';
+const BSSP_SUPABASE_ANON_KEY = (window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseAnonKey) || 'YOUR_SUPABASE_ANON_KEY';
+const bsspSupabase = (window.supabase && window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseUrl && window.BSSP_CONFIG.supabaseAnonKey)
+  ? window.supabase.createClient(window.BSSP_CONFIG.supabaseUrl, window.BSSP_CONFIG.supabaseAnonKey)
+  : null;
+
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initYear();
@@ -11,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGalleryFull();
   initLightbox();
   initContactForm();
+  initDonationForm();
   initDonateAmounts();
   animateCounters();
 });
@@ -125,24 +132,88 @@ function initLightbox(){
   document.addEventListener('keydown', (e) => { if(e.key === 'Escape') lb.classList.remove('open'); });
 }
 
-/* ---- Contact form (client-side demo: stores to localStorage) ---- */
+/* ---- Contact form ---- */
+async function submitContactToSupabase(form, data){
+  if(!bsspSupabase){
+    throw new Error('Supabase is not configured. Check js/config.local.js and the Supabase CDN script.');
+  }
+
+  const payload = {
+    name: data.name,
+    email: data.email,
+    phone: data.phone || '',
+    subject: data.subject || 'general',
+    message: data.message
+  };
+
+  const { error } = await bsspSupabase.from('contact_submissions').insert([payload]);
+  if(error) throw error;
+  return true;
+}
+
 function initContactForm(){
   const form = document.getElementById('contact-form');
   if(!form) return;
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
     if(!data.name || !data.email || !data.message){
       showAlert(form, 'error', 'कृपया सभी आवश्यक फ़ील्ड भरें। / Please fill all required fields.');
       return;
     }
-    const messages = bsspGetMessages();
-    messages.unshift({ ...data, id: 'msg_' + Date.now(), receivedAt: new Date().toISOString() });
-    bsspSave(BSSP_KEYS.messages, messages);
-    form.reset();
-    showAlert(form, 'success', 'धन्यवाद! आपका संदेश प्राप्त हो गया है — हम शीघ्र संपर्क करेंगे। / Thank you, your message has been received.');
+
+    try {
+      await submitContactToSupabase(form, data);
+      form.reset();
+      showAlert(form, 'success', 'धन्यवाद! आपका संदेश प्राप्त हो गया है — हम शीघ्र संपर्क करेंगे। / Thank you, your message has been received.');
+    } catch (err) {
+      console.error(err);
+      showAlert(form, 'error', 'संदेश भेजते समय समस्या हुई। कृपया पुनः प्रयास करें। / There was a problem sending the message.');
+    }
   });
 }
+
+async function initDonationForm(){
+  const form = document.getElementById('donation-form');
+  if(!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    if(!data.donor_name || !data.amount){
+      alert('Please enter donor name and amount.');
+      return;
+    }
+
+    try {
+      if(bsspSupabase){
+        const payload = {
+          donor_name: data.donor_name,
+          donor_email: data.donor_email || '',
+          donor_phone: data.donor_phone || '',
+          amount: Number(data.amount),
+          payment_method: data.payment_method || 'upi',
+          transaction_id: data.transaction_id || '',
+          notes: data.notes || '',
+          status: data.status || 'pending'
+        };
+
+        const { error } = await bsspSupabase.from('donation_submissions').insert([payload]);
+        if(error) throw error;
+      } else {
+        throw new Error('Supabase is not configured. Check js/config.local.js and the Supabase CDN script.');
+      }
+
+      form.reset();
+      alert('Donation request saved successfully. It is marked as pending until payment is confirmed.');
+    } catch (err) {
+      console.error(err);
+      alert('There was a problem saving the donation information.');
+    }
+  });
+}
+
 function showAlert(form, type, msg){
   const alertEl = form.querySelector('.alert');
   if(!alertEl) return;

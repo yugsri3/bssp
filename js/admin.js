@@ -10,6 +10,12 @@
 
 const ADMIN_PASSWORD_KEY = 'bssp_admin_password';
 const DEFAULT_ADMIN_PASSWORD = 'SET_THIS_IN_LOCAL_CONFIG';
+const ADMIN_SUPABASE_URL = (window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseUrl) || 'https://YOUR_PROJECT_URL.supabase.co';
+const ADMIN_SUPABASE_ANON_KEY = (window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseAnonKey) || 'YOUR_SUPABASE_ANON_KEY';
+const adminSupabase = (window.supabase && window.BSSP_CONFIG && window.BSSP_CONFIG.supabaseUrl && window.BSSP_CONFIG.supabaseAnonKey)
+  ? window.supabase.createClient(window.BSSP_CONFIG.supabaseUrl, window.BSSP_CONFIG.supabaseAnonKey)
+  : null;
+const MEDIA_BUCKET = 'site-media';
 
 function getConfiguredAdminPassword(){
   const configured = window.BSSP_CONFIG && window.BSSP_CONFIG.adminPassword;
@@ -110,12 +116,33 @@ function renderMissionsAdmin(){
     </tr>`).join('') : `<tr><td colspan="6"><div class="empty-state">अभी कोई मिशन नहीं जोड़ा गया।</div></td></tr>`;
 }
 
-function initMissionForm(){
+async function uploadAdminImage(file){
+  if(!file) return '';
+  if(!adminSupabase) throw new Error('Supabase is not configured.');
+  if(!file.type.startsWith('image/')) throw new Error('Please select an image file.');
+  if(file.size > 8 * 1024 * 1024) throw new Error('Image must be smaller than 8 MB.');
+
+  const extension = file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const path = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  const { error } = await adminSupabase.storage.from(MEDIA_BUCKET).upload(path, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type
+  });
+  if(error) throw error;
+  return adminSupabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+async function initMissionForm(){
   const form = document.getElementById('mission-form');
   if(!form) return;
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    try {
+      const uploadedCover = await uploadAdminImage(form.elements.coverFile.files[0]);
     const missions = bsspGetMissions();
     missions.unshift({
       id: 'm_' + Date.now(),
@@ -124,7 +151,7 @@ function initMissionForm(){
       status: data.status,
       date: data.date,
       location: data.location,
-      cover: data.cover || 'images/events-collage.jpg',
+      cover: uploadedCover || data.cover || 'images/events-collage.jpg',
       summary: data.summary,
       summaryEn: data.summaryEn || ''
     });
@@ -132,6 +159,12 @@ function initMissionForm(){
     form.reset();
     renderMissionsAdmin();
     flashSaved('mission-saved-msg');
+    } catch(error) {
+      console.error(error);
+      alert(`Image upload failed: ${error.message}`);
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 }
 function deleteMission(id){
@@ -155,19 +188,30 @@ function renderGalleryAdmin(){
       </div>
     </div>`).join('') : `<div class="empty-state">अभी कोई फ़ोटो नहीं जोड़ी गई।</div>`;
 }
-function initGalleryForm(){
+async function initGalleryForm(){
   const form = document.getElementById('gallery-form');
   if(!form) return;
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
-    if(!data.src){ return; }
-    const items = bsspGetGallery();
-    items.unshift({ id: 'g_' + Date.now(), src: data.src, caption: data.caption, captionEn: data.captionEn || '' });
-    bsspSave(BSSP_KEYS.gallery, items);
-    form.reset();
-    renderGalleryAdmin();
-    flashSaved('gallery-saved-msg');
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    try {
+      const uploadedImage = await uploadAdminImage(form.elements.imageFile.files[0]);
+      const imageSource = uploadedImage || data.src;
+      if(!imageSource) throw new Error('Select an image or enter an image URL.');
+      const items = bsspGetGallery();
+      items.unshift({ id: 'g_' + Date.now(), src: imageSource, caption: data.caption, captionEn: data.captionEn || '' });
+      bsspSave(BSSP_KEYS.gallery, items);
+      form.reset();
+      renderGalleryAdmin();
+      flashSaved('gallery-saved-msg');
+    } catch(error) {
+      console.error(error);
+      alert(`Image upload failed: ${error.message}`);
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 }
 function deleteGalleryItem(id){
@@ -178,9 +222,33 @@ function deleteGalleryItem(id){
 }
 
 /* ---------------- Contact messages (read-only) ---------------- */
-function renderMessagesAdmin(){
+async function renderMessagesAdmin(){
   const el = document.getElementById('admin-messages-list');
   if(!el) return;
+
+  if(adminSupabase){
+    const { data, error } = await adminSupabase
+      .from('contact_submissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if(error){
+      el.innerHTML = `<tr><td colspan="5"><div class="empty-state">Unable to load contact submissions. Add a SELECT policy for this table in Supabase.</div></td></tr>`;
+      console.error(error);
+      return;
+    }
+
+    el.innerHTML = (data || []).length ? data.map(m => `
+      <tr>
+        <td><strong>${escapeHtml(m.name)}</strong></td>
+        <td>${escapeHtml(m.email)}<br><span class="small">${escapeHtml(m.phone || '—')}</span></td>
+        <td>${escapeHtml(m.subject || 'general')}</td>
+        <td>${escapeHtml(m.message)}</td>
+        <td class="small">${new Date(m.created_at).toLocaleString('en-IN')}</td>
+      </tr>`).join('') : `<tr><td colspan="5"><div class="empty-state">अभी कोई संदेश प्राप्त नहीं हुआ।</div></td></tr>`;
+    return;
+  }
+
   const messages = bsspGetMessages();
   el.innerHTML = messages.length ? messages.map(m => `
     <tr>

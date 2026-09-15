@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="footer-grid">
         <div>
           <div class="brand-foot">
-            <img src="images/logo.jpeg" alt="BSSP Logo">
+            <img src="images/logobssp.jpeg" alt="BSSP Logo">
             <div>
               <strong style="color:#fff;">भारतीय सैनिक सहायता परिषद</strong><br>
               <span class="small" style="color:#8f9ac3;">Bhartiya Sainik Sahayta Parishad</span>
