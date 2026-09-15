@@ -1,4 +1,4 @@
 window.BSSP_CONFIG = Object.assign({
-  supabaseUrl: 'https://YOUR_PROJECT_URL.supabase.co',
-  supabaseAnonKey: 'YOUR_SUPABASE_ANON_KEY'
+  supabaseUrl: 'https://ttqynqwrlnhqdhreujvl.supabase.co',
+  supabaseAnonKey: 'sb_publishable_LPbHUhN0GJMhqHgJKTRxPA_ZVRKDMHe'
 }, window.BSSP_CONFIG || {});
